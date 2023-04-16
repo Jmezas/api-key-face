@@ -4,7 +4,11 @@ import { CreateUserDto } from './application/dto/create-user.dto';
 import { UpdateUserDto } from './application/dto/update-user.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
-
+import { JwtAuthGuard } from 'src/common/middlewares/auth/jwt.auth.guard';
+import { Req, UseGuards } from '@nestjs/common/decorators';
+import { ApiBearerAuth } from '@nestjs/swagger';
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
@@ -20,9 +24,8 @@ export class UsersController {
   @Post('compareFace')
   @UseInterceptors(AnyFilesInterceptor())
   comapare(
-    @UploadedFiles() files: Express.Multer.File,
-    @Body() createUserDto: CreateUserDto) {
-    return this.usersService.compareFace(createUserDto,files);
+    @UploadedFiles() files: Express.Multer.File ,@Req() req) {
+    return this.usersService.compareFace(req.user,files);
   }
 
   @Get()

@@ -4,7 +4,7 @@ import { UpdateUserDto } from './application/dto/update-user.dto';
 
 import { S3, Rekognition } from 'aws-sdk';
 import { UserApplication } from './application/user.application';
-import { UserFactory } from './domain/models/user.factory'; 
+import { UserFactory } from './domain/models/user.factory';
 import { Trace } from 'src/helpers/trace.helper';
 import { ResponseDto } from '../shared/application/interfaces/dtos/response.dto';
 
@@ -39,13 +39,13 @@ export class UsersService {
       }
     }
   }
-  async compareFace(createUserDto: CreateUserDto, files: Express.Multer.File) {
+  async compareFace(user: any, files: Express.Multer.File) {
     try {
       // buscar usuario
       if (files === null) {
         throw new ForbiddenException('Es obliaorio subir una imagen');
       }
-      const userId = +createUserDto['id'];
+      const userId = +user.userId;
       const userBY = (await this.Application.findByOne({ id: userId }, []))
         .payload.data as any;
       if (userBY) {
@@ -75,7 +75,7 @@ export class UsersService {
         var rekognition = new Rekognition();
         let compareFacesResponse = await rekognition
           .compareFaces(params_)
-          .promise(); 
+          .promise();
         let resultado =
           'Similitud : ' + compareFacesResponse.FaceMatches[0].Similarity;
 
