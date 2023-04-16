@@ -1,11 +1,16 @@
 {
   "name": "api-key-face",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Proyecto tesis",
+  "author": "Jhaser Meza sihui",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": "16.18.1",
+    "npm": "8.19.2"
+  },
   "scripts": {
+    "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
