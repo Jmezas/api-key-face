@@ -75,9 +75,7 @@ export class UsersService {
         var rekognition = new Rekognition();
         let compareFacesResponse = await rekognition
           .compareFaces(params_)
-          .promise();
-        let resultado =
-          'Similitud : ' + compareFacesResponse.FaceMatches[0].Similarity;
+          .promise(); 
 
         return ResponseDto<any>(
           Trace.TraceId(),
