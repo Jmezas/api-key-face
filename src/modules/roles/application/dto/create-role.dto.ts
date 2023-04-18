@@ -11,7 +11,7 @@ export class CreateRoleDto {
   name: string;
 
   @ApiProperty()
-  @IsArray()
   @IsOptional()
+  @IsArray()
   menus: number[] | string[];
-}
+} 

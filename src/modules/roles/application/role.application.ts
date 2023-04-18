@@ -17,7 +17,9 @@ export class RoleApplication extends BaseApplication<RoleModel> {
     super(RoleRepository, new RoleDto());
   }
   override async add(entity: RoleModel): Promise<Result<RoleModel>> {
-    if (entity.menus.length > 0) {
+    console.log(entity);
+    if (entity.menus != undefined) {
+      console.log(entity.menus);
       const menus = await this.MenuRepository.findByIds(
         entity.menus as number[],
       );
@@ -25,6 +27,7 @@ export class RoleApplication extends BaseApplication<RoleModel> {
     } else {
       delete entity.menus;
     }
+    console.log("fin",entity);
     const result = await this.RoleRepository.insert(entity);
     return new RoleDto().mapping(result);
   }
