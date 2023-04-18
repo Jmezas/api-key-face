@@ -5,8 +5,10 @@ import { UpdateUserDto } from './application/dto/update-user.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/middlewares/auth/jwt.auth.guard';
-import { Req, UseGuards } from '@nestjs/common/decorators';
+import { Query, Req, UseGuards } from '@nestjs/common/decorators';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { MatchQueryPipe } from 'src/common/match-query.pipe';
+import { PasswordDTO } from './application/dto/password-user-dto';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @ApiTags('users')
@@ -32,19 +34,30 @@ export class UsersController {
   findAll() {
     return this.usersService.findAll();
   }
-
+  @Get('fullpage')
+  fullpage(@Query(new MatchQueryPipe([])) query) {
+    return this.usersService.fullpage(query);
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req,
+  ) {
+    return this.usersService.update(+id, updateUserDto, req.user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  remove(@Param('id') id: string, @Req() req) {
+    return this.usersService.remove(+id, req.user);
+  }
+  @Post('update-password')
+  updatePass(@Body() PasswordDTO: PasswordDTO) {
+    return this.usersService.upatePassword(PasswordDTO);
   }
 }

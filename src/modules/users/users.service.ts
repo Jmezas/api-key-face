@@ -7,6 +7,7 @@ import { UserApplication } from './application/user.application';
 import { UserFactory } from './domain/models/user.factory';
 import { Trace } from 'src/helpers/trace.helper';
 import { ResponseDto } from '../shared/application/interfaces/dtos/response.dto';
+import { PasswordDTO } from './application/dto/password-user-dto';
 
 @Injectable()
 export class UsersService {
@@ -87,19 +88,55 @@ export class UsersService {
     }
   }
 
-  findAll() {
-    return `This action returns all users`;
+ async findAll() {
+    Trace.TraceId(true);
+    const result = await this.Application.findAll({}, ['roles'], {});
+    return result;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    Trace.TraceId(true);
+    const result = await this.Application.findByOne({ id }, [
+      'roles', 
+    ]);
+    return result;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto, user: any) {
+    Trace.TraceId(true);
+    const productToInsert = { id: id, ...updateUserDto };
+    const product = new UserFactory().create(productToInsert);
+    (await product).updatedUser = +user.userId;
+    (await product).updatedAt = new Date();
+    const result = await this.Application.update(await product, {}, []);
+    return result;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number, user: any) {
+    Trace.TraceId(true);
+    const result = await this.Application.delete({ id }, +user.userId);
+    return result;
   }
+
+  async fullpage(query: any) {
+    if (!query.search) {
+      delete query.search;
+    }
+    Trace.TraceId(true);
+    const result = await this.Application.getPage(
+      query.page,
+      query.limit,
+      { name: query.search, status: true },
+      ['roles', 'warehouses'],
+      { id: 'desc' },
+    );
+    return result;
+  }
+
+  async upatePassword(PasswordDTO: PasswordDTO) {
+    Trace.TraceId(true);
+    const result = await this.Application.updatePassword(PasswordDTO);
+    return result;
+  }
+  
 }
