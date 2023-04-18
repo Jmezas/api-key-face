@@ -19,7 +19,7 @@ export class UserInfrastructure
     @InjectRepository(UserEntity)
     private readonly UserRepository: Repository<UserEntity>,
   ) {
-    super(UserRepository as any);
+    super(UserRepository);
   }
   async updatePassword(
     Upassword: UserPasswordModel,

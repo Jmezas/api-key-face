@@ -9,8 +9,8 @@ export const transporter = nodemailer.createTransport({
     pass: 'ckshbhacmrodckqq', // generated ethereal password
   },
   tls: {
-    rejectUnauthorized: false
-  }
+    rejectUnauthorized: false,
+  },
 });
 
 transporter.verify().then(() => {

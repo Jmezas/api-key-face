@@ -8,10 +8,14 @@ import { UserFactory } from './domain/models/user.factory';
 import { Trace } from 'src/helpers/trace.helper';
 import { ResponseDto } from '../shared/application/interfaces/dtos/response.dto';
 import { PasswordDTO } from './application/dto/password-user-dto';
+import { AuthApplication } from '../auth/application/auth.application';
 
 @Injectable()
 export class UsersService {
-  constructor(private Application: UserApplication) {}
+  constructor(
+    private Application: UserApplication,
+    private applicationAuth: AuthApplication,
+  ) {}
   async create(createUserDto: CreateUserDto, files: Express.Multer.File) {
     try {
       if (files != null) {
@@ -26,7 +30,17 @@ export class UsersService {
         const user = new UserFactory().create(createUserDto);
         (await user).imageURL = imageS3.Location;
         (await user).imageName = imageS3.Key;
-        return await this.Application.add(await user);
+        const response = (await this.Application.add(await user)).payload
+          .data as any;
+        if (response) {
+          const email = (await user).email;
+          const password = createUserDto.password;
+          console.log(email, password);
+          const result = await this.applicationAuth.login({ email, password });
+          return result;
+        } else {
+          throw new ForbiddenException('Error al crear usuario');
+        }
       } else {
         throw new ForbiddenException('Es obliaorio subir una imagen');
       }
@@ -76,7 +90,7 @@ export class UsersService {
         var rekognition = new Rekognition();
         let compareFacesResponse = await rekognition
           .compareFaces(params_)
-          .promise(); 
+          .promise();
 
         return ResponseDto<any>(
           Trace.TraceId(),
@@ -88,7 +102,7 @@ export class UsersService {
     }
   }
 
- async findAll() {
+  async findAll() {
     Trace.TraceId(true);
     const result = await this.Application.findAll({}, ['roles'], {});
     return result;
@@ -96,9 +110,7 @@ export class UsersService {
 
   async findOne(id: number) {
     Trace.TraceId(true);
-    const result = await this.Application.findByOne({ id }, [
-      'roles', 
-    ]);
+    const result = await this.Application.findByOne({ id }, ['roles']);
     return result;
   }
 
@@ -138,5 +150,4 @@ export class UsersService {
     const result = await this.Application.updatePassword(PasswordDTO);
     return result;
   }
-  
 }
