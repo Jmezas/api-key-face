@@ -1,12 +1,10 @@
-Set-PSDebug -Trace 1
-
 $EC2_ADDRESS = "54.89.70.110"
 
-# # 1. Build your project
-# npm run build
+# 1. Build your project
+npm run build
 
-# # 2. Zip the bundled files, env, package.json
-# 7z a bundle.zip dist package.json .env
+ # 2. Zip the bundled files, env, package.json
+7z a bundle.zip dist package.json .env
 
 # 3. Clean the app folder
 ssh ubuntu@$EC2_ADDRESS "cd /home/ubuntu/app && rm -rf *"
@@ -25,5 +23,5 @@ ssh ubuntu@$EC2_ADDRESS 'cd /home/ubuntu/app && export PATH=$PATH:/home/ubuntu/.
 ssh ubuntu@$EC2_ADDRESS 'cd /home/ubuntu/app && export PATH=$PATH:/home/ubuntu/.nvm/versions/node/v16.20.0/bin && pm2 restart all'
 
 # 8. Remove the zip file
-# ssh ubuntu@$EC2_ADDRESS "cd /home/ubuntu/app && rm bundle.zip"
-# Remove-Item bundle.zip
+ssh ubuntu@$EC2_ADDRESS "cd /home/ubuntu/app && rm bundle.zip"
+Remove-Item bundle.zip
