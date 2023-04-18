@@ -22,7 +22,7 @@ export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Post()
-  create(@Body() createRoleDto: CreateRoleDto, @Req() req) { 
+  create(@Body() createRoleDto: CreateRoleDto, @Req() req) {
     return this.rolesService.create(createRoleDto, req.user);
   }
 

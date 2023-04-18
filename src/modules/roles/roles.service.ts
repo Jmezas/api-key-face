@@ -7,7 +7,7 @@ import { Trace } from 'src/helpers/trace.helper';
 @Injectable()
 export class RolesService {
   constructor(private Application: RoleApplication) {}
-  async create(createRoleDto: CreateRoleDto,user: any) { 
+  async create(createRoleDto: CreateRoleDto,user: any) {
     try {
       Trace.TraceId(true);
       console.log(createRoleDto);
