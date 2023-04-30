@@ -1,4 +1,4 @@
-$EC2_ADDRESS = "44.201.174.6"
+$EC2_ADDRESS = "34.227.223.237"
 
 # 1. Build your project
 npm run build

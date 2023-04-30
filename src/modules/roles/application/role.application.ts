@@ -27,7 +27,7 @@ export class RoleApplication extends BaseApplication<RoleModel> {
     } else {
       delete entity.menus;
     }
-    console.log("fin",entity);
+    console.log('fin', entity);
     const result = await this.RoleRepository.insert(entity);
     return new RoleDto().mapping(result);
   }
@@ -36,7 +36,7 @@ export class RoleApplication extends BaseApplication<RoleModel> {
     where: object,
     relations: string[],
   ): Promise<Result<RoleModel>> {
-    if (entity.menus.length > 0) {
+    if (entity.menus != undefined) {
       const menus = await this.MenuRepository.findByIds(
         entity.menus as number[],
       );

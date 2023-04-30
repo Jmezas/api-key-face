@@ -9,7 +9,7 @@ import { ResponseDto } from 'src/modules/shared/application/interfaces/dtos/resp
 import Result from 'src/modules/shared/application/interfaces/result.interface';
 import { Trace } from 'src/helpers/trace.helper';
 import { UserEntity } from 'src/modules/users/domain/models/user.entity';
-import { PasswordService } from 'src/modules/users/domain/services/password.service'; 
+import { PasswordService } from 'src/modules/users/domain/services/password.service';
 import { In, Repository } from 'typeorm';
 import { AuthModel, MenuModel } from '../domain/models/auth.model';
 import { TokensModel } from '../domain/models/tokens.model';
@@ -25,7 +25,7 @@ export class AuthInfrastructure implements AuthRepository {
     @InjectRepository(UserEntity)
     private readonly UserRepository: Repository<UserEntity>,
     @InjectRepository(RoleEntity)
-    private readonly RoleEntitypository: Repository<RoleEntity>, 
+    private readonly RoleEntitypository: Repository<RoleEntity>,
     private readonly jwtService: JwtService,
   ) {}
   async login(auth: AuthModel): Promise<Result<TokensModel>> {
@@ -39,12 +39,13 @@ export class AuthInfrastructure implements AuthRepository {
     });
     const user = await this.UserRepository.findOne({
       where: { email: auth.email },
-      relations: ['roles', ],
+      relations: ['roles'],
     });
     const roles = await this.RoleEntitypository.findOne({
       where: { id: In(user.roles.map((role) => role.id)) },
       relations: ['menus'],
     });
+    console.log(JSON.stringify(user));
 
     if (user) {
       const isPasswordValid = await PasswordService.compareArgon(
@@ -56,8 +57,10 @@ export class AuthInfrastructure implements AuthRepository {
           id: user.id,
           email: user.email,
           name: user.name,
-          roles: user.roles.map((role) => role.name), 
-         // menu: this.createTree(roles.menus as any) as any,
+          lastname: user.lastname,
+          imageURL: user.imageURL,
+          roles: user.roles.map((role) => role.name),
+          menu: this.createTree(roles.menus as any) as any,
         });
 
         return ResponseDto(Trace.TraceId(), {
@@ -82,7 +85,7 @@ export class AuthInfrastructure implements AuthRepository {
     });
     const user = await this.UserRepository.findOne({
       where: { refreshToken, status: true },
-      relations: ['roles',  ],
+      relations: ['roles'],
     });
     const roles = await this.RoleEntitypository.findOne({
       where: { id: In(user.roles.map((role) => role.id)) },
@@ -94,8 +97,10 @@ export class AuthInfrastructure implements AuthRepository {
         id: user.id,
         email: user.email,
         name: user.name,
+        lastname: user.lastname,
+        imageURL: user.imageURL,
         roles: user.roles.map((role) => role.name),
-        menu: this.createTree(roles.menus as any), 
+        menu: this.createTree(roles.menus as any),
       });
 
       user.refreshToken = uuidv4();
