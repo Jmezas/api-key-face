@@ -45,7 +45,7 @@ export class UsersService {
         const imageS3 = await s3
           .upload({
             Bucket: process.env.AWS_BUCKET,
-            Key: files[0].originalname,
+            Key: files[0].originalname.replace(/\s+/g, ''),
             Body: files[0].buffer,
           })
           .promise();
