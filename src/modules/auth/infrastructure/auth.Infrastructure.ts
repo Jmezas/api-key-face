@@ -45,7 +45,7 @@ export class AuthInfrastructure implements AuthRepository {
       where: { id: In(user.roles.map((role) => role.id)) },
       relations: ['menus'],
     });
-    console.log(JSON.stringify(user));
+    console.log(roles);
 
     if (user) {
       const isPasswordValid = await PasswordService.compareArgon(

@@ -9,6 +9,7 @@ import { Trace } from 'src/helpers/trace.helper';
 import { ResponseDto } from '../shared/application/interfaces/dtos/response.dto';
 import { PasswordDTO } from './application/dto/password-user-dto';
 import { AuthApplication } from '../auth/application/auth.application';
+import { ResultCompare } from './application/dto/resultCompare';
 
 @Injectable()
 export class UsersService {
@@ -19,6 +20,27 @@ export class UsersService {
   async create(createUserDto: CreateUserDto, files: Express.Multer.File) {
     try {
       if (files != null) {
+        //imagen a comparar
+        const params = {
+          Image: {
+            Bytes: files[0].buffer,
+          },
+          Attributes: ['ALL'],
+        };
+        //instancia de rekognition
+        var rekognition = new Rekognition();
+
+        //detecta rostros
+        let detectFace = await rekognition
+          .detectFaces(params)
+          .promise()
+          .catch((err) => {
+            throw new ForbiddenException(err.message);
+          });
+        if (detectFace.FaceDetails.length === 0) {
+          throw new ForbiddenException('No se detecto rostro en la imagen');
+        }
+
         const s3 = new S3();
         const imageS3 = await s3
           .upload({
@@ -56,6 +78,8 @@ export class UsersService {
   }
   async compareFace(user: any, files: Express.Multer.File) {
     try {
+      //inicializar variables
+      let resultCompare = new ResultCompare();
       // buscar usuario
       if (files === null) {
         throw new ForbiddenException('Es obliaorio subir una imagen');
@@ -81,20 +105,84 @@ export class UsersService {
           'base64',
         );
 
-        //VALIDACION FACIAL
-        const params_ = {
-          SimilarityThreshold: 90,
-          SourceImage: { Bytes: bufferFoto },
-          TargetImage: { Bytes: files[0].buffer },
+        //imagen a comparar
+        const params = {
+          Image: {
+            Bytes: files[0].buffer,
+          },
+          Attributes: ['ALL'],
         };
+        //instancia de rekognition
         var rekognition = new Rekognition();
-        let compareFacesResponse = await rekognition
-          .compareFaces(params_)
-          .promise();
+
+        //detecta rostros
+        let detectFace = await rekognition
+          .detectFaces(params)
+          .promise()
+          .then((data) => {
+            console.log('data', data);
+            return data;
+          })
+          .catch((err) => {
+            console.log(err);
+            throw new ForbiddenException(err.message);
+          });
+        if (detectFace.FaceDetails.length != 0) {
+          for (
+            let index = 0;
+            index < detectFace.FaceDetails[0].Emotions.length;
+            index++
+          ) {
+            const element = detectFace.FaceDetails[0].Emotions[index];
+            if (
+              element.Type == 'FEAR' ||
+              element.Type == 'SAD' ||
+              element.Type == 'DISGUSTED'
+            ) {
+              if (element.Confidence > 90) {
+                throw new ForbiddenException(
+                  'No se puede detectar la foto por que tiene emociones negativas',
+                );
+              }
+            }
+            resultCompare.Emotions.push({
+              Type: element.Type,
+              Confidence: element.Confidence,
+            });
+          }
+
+          //PARAMETROS DE COMPARACION
+          const params_ = {
+            SimilarityThreshold: 90,
+            SourceImage: { Bytes: bufferFoto },
+            TargetImage: { Bytes: files[0].buffer },
+          };
+
+          //VALIDACION FACIAL
+          let compareFacesResponse = await rekognition
+            .compareFaces(params_)
+            .promise()
+            .catch((err) => {
+              console.log(err);
+              throw new ForbiddenException(err.message);
+            });
+
+          if (
+            compareFacesResponse.FaceMatches.length == 0 ||
+            compareFacesResponse == undefined
+          ) {
+            throw new ForbiddenException(
+              'No se puede comprar la foto por que no se parece a la foto del usuario',
+            );
+          }
+          resultCompare.Similarity =
+            compareFacesResponse.FaceMatches[0].Similarity;
+        }
 
         return ResponseDto<any>(
           Trace.TraceId(),
-          compareFacesResponse.FaceMatches[0],
+          resultCompare,
+          //detectFace,
         );
       }
     } catch (error) {
