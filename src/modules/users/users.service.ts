@@ -177,6 +177,8 @@ export class UsersService {
           }
           resultCompare.Similarity =
             compareFacesResponse.FaceMatches[0].Similarity;
+        } else {
+          throw new ForbiddenException('No se detecto rostro en la imagen');
         }
 
         return ResponseDto<any>(
