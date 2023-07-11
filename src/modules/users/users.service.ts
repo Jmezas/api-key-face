@@ -120,11 +120,9 @@ export class UsersService {
           .detectFaces(params)
           .promise()
           .then((data) => {
-            console.log('data', data);
             return data;
           })
           .catch((err) => {
-            console.log(err);
             throw new ForbiddenException(err.message);
           });
         if (detectFace.FaceDetails.length != 0) {
@@ -163,10 +161,8 @@ export class UsersService {
             .compareFaces(params_)
             .promise()
             .catch((err) => {
-              console.log(err);
               throw new ForbiddenException(err.message);
             });
-
           if (
             compareFacesResponse.FaceMatches.length == 0 ||
             compareFacesResponse == undefined
@@ -229,7 +225,7 @@ export class UsersService {
       query.page,
       query.limit,
       { name: query.search, status: true },
-      ['roles', 'warehouses'],
+      ['roles'],
       { id: 'desc' },
     );
     return result;
